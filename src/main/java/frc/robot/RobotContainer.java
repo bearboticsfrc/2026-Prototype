@@ -19,7 +19,7 @@ public class RobotContainer {
   private Notifier simNotifier = null;
   private double lastSimTime;
 
-  private Flywheel flywheel = new Flywheel();
+  @Logged private Flywheel flywheel = new Flywheel();
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -36,7 +36,8 @@ public class RobotContainer {
 
     joystick.a().whileTrue(flywheel.runSlow());
 
-    joystick.y().whileTrue(flywheel.runFast());
+    joystick.y().onTrue(flywheel.runSlow());
+    // joystick.y().whileTrue(flywheel.runFast());
     joystick.b().onTrue(flywheel.stopCommand());
   }
 

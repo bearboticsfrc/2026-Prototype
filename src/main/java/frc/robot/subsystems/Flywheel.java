@@ -9,10 +9,12 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,15 +22,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Flywheel extends SubsystemBase {
   /** Creates a new Flywheel. */
   // Create a new CANBus with name canivore
-  private final CANBus canivore = new CANBus("canivore");
+  private final CANBus canivore = new CANBus("drive");
 
   // Create the leader and follower TalonFX motors
-  private final TalonFX leader = new TalonFX(2, canivore);
+  @Logged private final TalonFX leader = new TalonFX(60, canivore);
 
   // private final TalonFX follower = new TalonFX(22, canivore);
 
   // Velocity output control for the flywheel
   private final MotionMagicVelocityVoltage velocityOut = new MotionMagicVelocityVoltage(0);
+
+  private final DutyCycleOut output = new DutyCycleOut(0);
 
   // Tolerance for the flywheel velocity
   private final AngularVelocity tolerance = RotationsPerSecond.of(0.25);
@@ -44,9 +48,9 @@ public class Flywheel extends SubsystemBase {
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.Slot0.kS = 0.0; // Static gain
     config.Slot0.kV = 0.0; // Velocity gain
-    config.Slot0.kP = 0.0; // Proportional gain
-    config.MotionMagic.MotionMagicCruiseVelocity = 0.0; // Max velocity
-    config.MotionMagic.MotionMagicAcceleration = 0.0; // Max acceleration allowed
+    config.Slot0.kP = .7; // Proportional gain
+    config.MotionMagic.MotionMagicCruiseVelocity = 3000; // Max velocity
+    config.MotionMagic.MotionMagicAcceleration = 300; // Max acceleration allowed
     // Try to apply config multiple time. Break after successfully applying
     for (int i = 0; i < 2; ++i) {
       var status = leader.getConfigurator().apply(config);
@@ -70,13 +74,24 @@ public class Flywheel extends SubsystemBase {
   }
 
   /**
+   * Sets the percent for the flywheel.
+   *
+   * @param percent The percent to set.
+   */
+  public void setPercent(double value) {
+    // Apply the velocity output to the leader motor
+    leader.setControl(output.withOutput(.1));
+  }
+
+  /**
    * Command to run the flywheel at a slow speed.
    *
    * @return The command to run the flywheel slowly.
    */
   public Command runSlow() {
     // Command to run the flywheel at a slow speed
-    return runOnce(() -> setVelocity(RotationsPerSecond.of(50)));
+    // return runOnce(() -> setVelocity(RotationsPerSecond.of(50)));
+    return runOnce(() -> setPercent(.1));
   }
 
   /**
