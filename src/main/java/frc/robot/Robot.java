@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  private final Importance MINIMUM_IMPORTANCE = Importance.CRITICAL;
+  private final Importance MINIMUM_IMPORTANCE = Importance.DEBUG;
 
   private Command m_autonomousCommand;
 

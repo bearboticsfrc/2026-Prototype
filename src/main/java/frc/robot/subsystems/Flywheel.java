@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import bearlib.util.TunableNumber;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -25,7 +26,7 @@ public class Flywheel extends SubsystemBase {
   private final CANBus canivore = new CANBus("drive");
 
   // Create the leader and follower TalonFX motors
-  @Logged private final TalonFX leader = new TalonFX(60, canivore);
+  private final TalonFX leader = new TalonFX(60, canivore);
 
   // private final TalonFX follower = new TalonFX(22, canivore);
 
@@ -33,6 +34,8 @@ public class Flywheel extends SubsystemBase {
   private final MotionMagicVelocityVoltage velocityOut = new MotionMagicVelocityVoltage(0);
 
   private final DutyCycleOut output = new DutyCycleOut(0);
+
+  private TunableNumber rpm = new TunableNumber("RPM", 60, () -> true);
 
   // Tolerance for the flywheel velocity
   private final AngularVelocity tolerance = RotationsPerSecond.of(0.25);
@@ -45,7 +48,7 @@ public class Flywheel extends SubsystemBase {
     // Put's the motor in Coast mode to make it easier to move by hand
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     // Configure the motor to make sure positive voltage is counter clockwise
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.Slot0.kS = 0.0; // Static gain
     config.Slot0.kV = 0.0; // Velocity gain
     config.Slot0.kP = .7; // Proportional gain
@@ -90,8 +93,8 @@ public class Flywheel extends SubsystemBase {
    */
   public Command runSlow() {
     // Command to run the flywheel at a slow speed
-    // return runOnce(() -> setVelocity(RotationsPerSecond.of(50)));
-    return runOnce(() -> setPercent(.1));
+    return runOnce(() -> setVelocity(RotationsPerSecond.of(rpm.getAsDouble())));
+    // return runOnce(() -> setPercent(.1));
   }
 
   /**
@@ -101,7 +104,7 @@ public class Flywheel extends SubsystemBase {
    */
   public Command runFast() {
     // Command to run the flywheel at a fast speed
-    return runOnce(() -> setVelocity(DegreesPerSecond.of(3600)));
+    return runOnce(() -> setVelocity(DegreesPerSecond.of(1500)));
   }
 
   /**
@@ -118,6 +121,7 @@ public class Flywheel extends SubsystemBase {
    *
    * @return true if at target speed, false otherwise
    */
+  @Logged
   public boolean isAtTarget() {
     return getVelocity()
         .isNear(
@@ -130,6 +134,7 @@ public class Flywheel extends SubsystemBase {
    *
    * @return The current velocity of the flywheel.
    */
+  @Logged
   public AngularVelocity getVelocity() {
     // Get the current velocity of the flywheel
     return leader.getVelocity().getValue();
@@ -140,9 +145,20 @@ public class Flywheel extends SubsystemBase {
    *
    * @return The target velocity of the flywheel.
    */
+  @Logged
   public AngularVelocity getTargetVelocity() {
     // Return the target velocity
     return velocityOut.getVelocityMeasure();
+  }
+
+  @Logged
+  public double getMotorCurrent() {
+    return leader.getSupplyCurrent().refresh().getValueAsDouble();
+  }
+
+  @Logged
+  public double getMotorTemp() {
+    return leader.getDeviceTemp().refresh().getValueAsDouble();
   }
 
   // Stop the flywheel motors

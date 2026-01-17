@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.subsystems.Flywheel;
 
-@Logged
 public class RobotContainer {
   private static final double kSimLoopPeriod = 0.004; // 4 ms
   private Notifier simNotifier = null;
@@ -36,7 +35,7 @@ public class RobotContainer {
 
     joystick.a().whileTrue(flywheel.runSlow());
 
-    joystick.y().onTrue(flywheel.runSlow());
+    joystick.y().onTrue(flywheel.runFast());
     // joystick.y().whileTrue(flywheel.runFast());
     joystick.b().onTrue(flywheel.stopCommand());
   }
