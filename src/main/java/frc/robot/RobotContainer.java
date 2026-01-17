@@ -4,13 +4,16 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.Flywheel;
 
 public class RobotContainer {
@@ -35,9 +38,25 @@ public class RobotContainer {
 
     joystick.a().whileTrue(flywheel.runSlow());
 
-    joystick.y().onTrue(flywheel.runFast());
-    // joystick.y().whileTrue(flywheel.runFast());
     joystick.b().onTrue(flywheel.stopCommand());
+
+    // configureSysidBindings(joystick);
+  }
+
+  public void configureSysidBindings(CommandXboxController joystick) {
+    joystick.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
+    joystick.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
+
+    /*
+     * Joystick Y = quasistatic forward
+     * Joystick A = quasistatic reverse
+     * Joystick B = dynamic forward
+     * Joystick X = dyanmic reverse
+     */
+    joystick.y().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    joystick.a().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    joystick.b().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    joystick.x().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
   }
 
   public void simulationInit() {

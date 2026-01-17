@@ -66,6 +66,7 @@ public class NetworkNumber {
    * @return The current value.
    */
   public double get() {
+    value = entry.get();
     return value;
   }
 }
