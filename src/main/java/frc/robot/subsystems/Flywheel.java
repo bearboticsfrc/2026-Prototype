@@ -70,7 +70,7 @@ public class Flywheel extends SubsystemBase {
     // Put's the motor in Coast mode to make it easier to move by hand
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     // Configure the motor to make sure positive voltage is counter clockwise
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.Slot0.kS = 0.31576; // Static gain
     config.Slot0.kV = 0.11631; // Velocity gain
     config.Slot0.kA = 0.015927;
