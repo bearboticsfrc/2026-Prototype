@@ -4,30 +4,38 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.Flywheel;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.Turret;
 
 public class RobotContainer {
   private static final double kSimLoopPeriod = 0.004; // 4 ms
   private Notifier simNotifier = null;
   private double lastSimTime;
 
-  @Logged private Flywheel flywheel = new Flywheel();
+  // @Logged private Flywheel flywheel = new Flywheel();
+
+  @Logged private Turret turret = new Turret();
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
   public RobotContainer() {
     configureBindings();
   }
+
 
   private void configureBindings() {
 
@@ -36,11 +44,26 @@ public class RobotContainer {
     final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled().whileTrue(new InstantCommand());
 
-    joystick.a().whileTrue(flywheel.runSlow());
+    //  joystick.a().whileTrue(flywheel.runSlow());
 
-    joystick.b().onTrue(flywheel.stopCommand());
+    // joystick.b().onTrue(flywheel.stopCommand());
 
     // configureSysidBindings(joystick);
+
+    joystick.a().onTrue(turret.setAngle(ninteyDegrees));
+    joystick.b().onTrue(turret.setAngle(zeroDegrees));
+    joystick.x().onTrue(turret.setAngle(oneEightyDegrees));
+    joystick.y().onTrue(turret.setAngle(twoSeventyDegrees));
+
+    rightStickActive()
+        .whileTrue(
+            turret.setAngle(
+                () -> Radians.of(Math.atan2(-joystick.getRightX(), -joystick.getRightY()))));
+  }
+
+  public Trigger rightStickActive() {
+    return new Trigger(
+        () -> Math.abs(joystick.getRightY()) > 0.1 || Math.abs(joystick.getRightX()) > 0.1);
   }
 
   public void configureSysidBindings(CommandXboxController joystick) {
@@ -53,11 +76,20 @@ public class RobotContainer {
      * Joystick B = dynamic forward
      * Joystick X = dyanmic reverse
      */
-    joystick.y().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    joystick.a().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    joystick.b().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    joystick.x().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    // flywheel mode
+    // joystick.y().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // joystick.a().whileTrue(flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // joystick.b().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // joystick.x().whileTrue(flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
   }
+
+  public Angle ninteyDegrees = Degrees.of(90);
+  public Angle oneEightyDegrees = Degrees.of(180);
+  public Angle twoSeventyDegrees = Degrees.of(270);
+
+  public Angle zeroDegrees = Degrees.of(0);
 
   public void simulationInit() {
     lastSimTime = Utils.getCurrentTimeSeconds();
