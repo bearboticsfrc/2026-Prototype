@@ -5,21 +5,20 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Elevator;
 
 public class RobotContainer {
   private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -28,16 +27,28 @@ public class RobotContainer {
 
   // @Logged private Flywheel flywheel = new Flywheel();
 
-  @Logged private Turret turret = new Turret();
+  // @Logged private Turret turret = new Turret();
 
   private final CommandXboxController joystick = new CommandXboxController(0);
+
+  @Logged private final Elevator elevator = new Elevator();
 
   public RobotContainer() {
     configureBindings();
   }
 
-
   private void configureBindings() {
+
+    // joystick.b().onTrue(elevator.goToSetpoint(() -> Elevator.Setpoint.Middle));
+    // joystick.a().onTrue(elevator.goToSetpoint(() -> Elevator.Setpoint.Ground));
+    // joystick.y().onTrue(elevator.goToSetpoint(() -> Elevator.Setpoint.Top));
+
+    joystick.a().onTrue(elevator.goToSetpointAngle(() -> Rotations.of(0)));
+    joystick.b().onTrue(elevator.goToSetpointAngle(() -> Rotations.of(.7)));
+    joystick.y().onTrue(elevator.goToSetpointAngle(() -> Rotations.of(1.3)));
+
+    elevator.setDefaultCommand(
+        elevator.goToSetpointAngle(() -> Rotations.of(Math.abs(joystick.getRightY()))));
 
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
@@ -50,15 +61,15 @@ public class RobotContainer {
 
     // configureSysidBindings(joystick);
 
-    joystick.a().onTrue(turret.setAngle(ninteyDegrees));
-    joystick.b().onTrue(turret.setAngle(zeroDegrees));
-    joystick.x().onTrue(turret.setAngle(oneEightyDegrees));
-    joystick.y().onTrue(turret.setAngle(twoSeventyDegrees));
+    //   joystick.a().onTrue(turret.setAngle(ninteyDegrees));
+    //   joystick.b().onTrue(turret.setAngle(zeroDegrees));
+    //   joystick.x().onTrue(turret.setAngle(oneEightyDegrees));
+    //   joystick.y().onTrue(turret.setAngle(twoSeventyDegrees));
 
-    rightStickActive()
-        .whileTrue(
-            turret.setAngle(
-                () -> Radians.of(Math.atan2(-joystick.getRightX(), -joystick.getRightY()))));
+    //   rightStickActive()
+    //       .whileTrue(
+    //           turret.setAngle(
+    //               () -> Radians.of(Math.atan2(-joystick.getRightX(), -joystick.getRightY()))));
   }
 
   public Trigger rightStickActive() {

@@ -1,4 +1,4 @@
-   // Copyright (c) FIRST and other WPILib contributors.
+// Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
@@ -212,5 +212,15 @@ public class Flywheel extends SubsystemBase {
    */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
+  }
+
+  @Logged
+  public double getVelocityInRPM() {
+    return leader.getVelocity().getValue().in(RPM);
+  }
+
+  @Logged
+  public double getTargetVelocityInRPM() {
+    return velocityOut.getVelocityMeasure().in(RPM);
   }
 }
